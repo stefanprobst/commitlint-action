@@ -1,0 +1,76 @@
+{
+	"name": "@stefanprobst/commitlint-action",
+	"version": "1.0.0",
+	"private": true,
+	"license": "MIT",
+	"type": "commonjs",
+	"main": "./dist/index.js",
+	"exports": {
+		".": "./dist/index.js"
+	},
+	"engines": {
+		"node": "20.x",
+		"pnpm": "8.x"
+	},
+	"packageManager": "pnpm@8.11.0",
+	"scripts": {
+		"build": "run-s clean package",
+		"clean": "rm -rf ./dist",
+		"format:check": "prettier . \"!./dist/**\" --cache --check --ignore-path ./.gitignore",
+		"format:fix": "pnpm run format:check --write",
+		"lint:check": "eslint . --cache --ignore-path ./.gitignore",
+		"lint:fix": "pnpm run lint:check --fix",
+		"package": "ncc build ./src/index.ts --license licenses.txt --minify --out dist",
+		"prepare": "run-s setup",
+		"setup": "is-ci || simple-git-hooks",
+		"test": "exit 0",
+		"types:check": "tsc --noEmit",
+		"validate": "run-s format:check lint:check types:check test"
+	},
+	"dependencies": {
+		"@actions/core": "^1.10.1",
+		"@actions/github": "^6.0.0",
+		"@commitlint/lint": "^18.4.3",
+		"@commitlint/load": "^18.4.3"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^18.4.3",
+		"@octokit/webhooks-types": "^7.3.1",
+		"@stefanprobst/commitlint-config": "^1.0.3",
+		"@stefanprobst/eslint-config": "^1.2.1",
+		"@stefanprobst/prettier-config": "^4.0.0",
+		"@stefanprobst/tsconfig-lib": "^1.0.2",
+		"@types/node": "^20.10.0",
+		"@vercel/ncc": "^0.38.1",
+		"eslint": "^8.54.0",
+		"is-ci": "^3.0.1",
+		"lint-staged": "^15.1.0",
+		"npm-run-all2": "^6.1.1",
+		"prettier": "^3.1.0",
+		"simple-git-hooks": "^2.9.0",
+		"typescript": "^5.3.2"
+	},
+	"commitlint": {
+		"extends": "@stefanprobst/commitlint-config"
+	},
+	"eslintConfig": {
+		"extends": [
+			"@stefanprobst/eslint-config",
+			"@stefanprobst/eslint-config/strict"
+		],
+		"ignorePatterns": "dist"
+	},
+	"lint-staged": {
+		"*.ts": [
+			"eslint --cache --fix",
+			"prettier --cache --write"
+		],
+		"*.!(ts),!./dist/**": "prettier --cache --ignore-unknown --write"
+	},
+	"prettier": "@stefanprobst/prettier-config",
+	"simple-git-hooks": {
+		"commit-msg": "pnpm exec commitlint --edit",
+		"pre-commit": "pnpm exec lint-staged",
+		"pre-push": "pnpm run validate"
+	}
+}
